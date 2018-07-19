@@ -1,0 +1,64 @@
+---
+- name: Deploy virtual switch apppliance
+  block:
+    - name: Install openvswitch
+      yum:
+        name: openvswitch
+        state: installed
+
+    - name: Start openvswitch services
+      systemd:
+        name: openvswitch
+        state: started
+
+    - openvswitch_bridge:
+        bridge: "{{ item }}"
+        state: present
+      with_items: "{{ ovs_bridges }}"
+
+    - name: Find virtual switch
+      shell: "vagrant status vqfx-pfe | grep vqfx-pfe | grep running"
+      args:
+        chdir: "{{ vagrant_working_dir }}"
+      ignore_errors: true
+      register: pfe_status
+
+    - name: Deploy virtual switch using vagrant
+      shell: "vagrant up vqfx-pfe"
+      args:
+        chdir: "{{ vagrant_working_dir }}"
+      ignore_errors: true
+      when: pfe_status.rc != 0
+
+    - name: Find virtual routing engine
+      shell: "vagrant status vqfx | grep vqfx | grep running"
+      args:
+        chdir: "{{ vagrant_working_dir }}"
+      ignore_errors: true
+      register: re_status
+
+    - name: Deploy virtual routing engine using vagrant
+      shell: "vagrant up vqfx"
+      args:
+        chdir: "{{ vagrant_working_dir }}"
+      ignore_errors: true
+      when: re_status.rc != 0
+
+    - name: Create expect script for vqfx
+      copy:
+        src: expect.sh
+        dest: "{{ vagrant_working_dir }}"
+      when: re_status.rc != 0
+
+    - name: Create wait script for vqfx
+      copy:
+        src: wait.sh
+        dest: /tmp/wait.sh
+      when: re_status.rc != 0
+
+    - name: Copy wait script into vqfx
+      shell: "bash expect.sh"
+      args:
+        chdir: "{{ vagrant_working_dir }}"
+      when: re_status.rc != 0
+  become: true

@@ -1,0 +1,69 @@
+---
+#- name: Create working directory
+#  file:
+#    path: "{{ working_dir }}"
+#    state: directory
+#  become: yes
+#
+# install vagrant and dependencies
+- name: Install vagrant
+  yum:
+    name: https://releases.hashicorp.com/vagrant/2.1.1/vagrant_2.1.1_x86_64.rpm
+    state: present
+  become: yes
+
+- name: Install vagrant-libvirt dependencies
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - qemu
+    - libvirt
+    - libvirt-devel
+    - ruby-devel
+    - gcc
+    - expect
+    - qemu-kvm
+    - libxslt-devel
+    - libxml2-devel
+    - libvirt-devel
+    - libguestfs-tools-c
+  become: yes
+
+    # expect ansible requires a newer version
+- name: Install pexpect from pip
+  pip:
+    name: pexpect
+  become: yes
+
+- name: Check vagrant-libvirt is installed
+  shell: "vagrant plugin list | grep vagrant-libvirt"
+  register: vagrant_libvirt
+  ignore_errors: true
+  become: yes
+
+- name: Install vagrant-libvirt
+  command: "vagrant plugin install vagrant-libvirt"
+  when: vagrant_libvirt.rc != 0
+  become: yes
+
+- shell: cat /sys/module/kvm_intel/parameters/nested || true
+  register: nested_result
+  when: use_nested
+
+- name: reload kvm_intel
+  block:
+    - lineinfile:
+        path: /etc/modprobe.d/kvm_intel.conf
+        line: 'options kvm-intel nested=1'
+        create: yes
+    - modprobe:
+        name: kvm_intel
+        state: absent
+    - modprobe:
+        name: kvm_intel
+        state: present
+  when:
+    - use_nested
+    - "'Y' not in nested_result.stdout"
+  become: yes

@@ -1,0 +1,9 @@
+---
+- name: Setup vagrant environment
+  include_tasks: setup.yml
+
+- name: Install vagrant dependencies
+  include_tasks: vagrant-deps.yml
+
+- name: Deploy virtual switches
+  include_tasks: vagrant-deploy.yml

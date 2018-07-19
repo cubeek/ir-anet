@@ -1,0 +1,23 @@
+---
+- name: "Check if {{ box }} box already loaded"
+  shell: "vagrant box list | grep {{ box }}"
+  register: vagrant_box
+  ignore_errors: true
+  become: yes
+
+- name: "Check if there's already a {{ box }} image available"
+  stat:
+    path: "{{ vagrant_working_dir }}/vagrant-boxes/{{ box }}.box"
+  register: box_image
+  when: vagrant_box.rc != 0
+
+- name: "Download {{ box }} box"
+  get_url:
+    url: "{{ vagrant_box_source }}/{{ box }}.box"
+    dest: "{{ vagrant_working_dir }}/vagrant-boxes/{{ box }}.box"
+  when: vagrant_box.rc != 0 and box_image.stat.exists == False
+
+- name: "Add {{ box }} box"
+  command: "vagrant box add {{ vagrant_working_dir }}/vagrant-boxes/{{ box }}.box --name {{ box }}"
+  when: vagrant_box.rc != 0
+  become: yes

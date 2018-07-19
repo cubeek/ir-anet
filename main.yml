@@ -1,0 +1,6 @@
+---
+- name: Install Junos vQFX virtual appliance
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - vqfx

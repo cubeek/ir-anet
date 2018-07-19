@@ -1,0 +1,25 @@
+---
+
+- name: Install vagrant and dependencies
+  block:
+    - name: make working dir
+      file:
+        path: "{{ vagrant_working_dir }}"
+        state: directory
+    
+    - name: create vagrant file
+      template:
+        dest: "{{ vagrant_working_dir }}/Vagrantfile"
+        src: Vagrantfile.j2
+    
+    - name: make vagrant image directory
+      file:
+        path: "{{ vagrant_working_dir }}/vagrant-boxes"
+        state: directory
+
+    - include_tasks: create-vagrant-box.yml box={{ item }}
+      with_items:
+        - junos
+        - vqfx10k-pfe
+      
+  become: true
