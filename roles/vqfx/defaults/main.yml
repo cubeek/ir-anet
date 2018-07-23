@@ -3,6 +3,4 @@
 use_nested: no
 vagrant_working_dir: /home/anet-vagrant
 vagrant_box_source: http://10.8.125.119/vagrant
-ovs_bridges:
-  - br-controller
-  - br-baremetal
+ovs_bridge: br-vqfx

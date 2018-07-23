@@ -12,9 +12,8 @@
         state: started
 
     - openvswitch_bridge:
-        bridge: "{{ item }}"
+        bridge: "{{ ovs_bridge }}"
         state: present
-      with_items: "{{ ovs_bridges }}"
 
     - name: Find virtual switch
       shell: "vagrant status vqfx-pfe | grep vqfx-pfe | grep running"

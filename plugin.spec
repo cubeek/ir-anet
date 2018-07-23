@@ -12,7 +12,7 @@ subparsers:
             type: Bool
             help: Whether nested virtualization should be enabled on this host.
             default: False
-          ovs_bridges:
+          ovs_bridge:
             type: Value
-            help: List of OVS bridges to set up.
-            default: dunno how to make a list
+            help: OVS bridges that connects nodes with virtual switch.
+            default: br-vqfx

@@ -1,11 +1,4 @@
 ---
-#- name: Create working directory
-#  file:
-#    path: "{{ working_dir }}"
-#    state: directory
-#  become: yes
-#
-# install vagrant and dependencies
 - name: Install vagrant
   yum:
     name: https://releases.hashicorp.com/vagrant/2.1.1/vagrant_2.1.1_x86_64.rpm
@@ -28,9 +21,12 @@
     - libxml2-devel
     - libvirt-devel
     - libguestfs-tools-c
+    - python-ovsdbapp
+    - python-lxml
+    - libvirt-python
   become: yes
 
-    # expect ansible requires a newer version
+# expect ansible requires a newer version
 - name: Install pexpect from pip
   pip:
     name: pexpect
